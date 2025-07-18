@@ -30,6 +30,16 @@ jobs:
       - name: Run script to get proxies
         run: python get_proxies.py
 
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: ${{ secrets.CF_PAGES_PROJECT_NAME }} # 需要在仓库 Secrets 中设置
+          directory: '.' # 部署整个仓库的根目录
+          # GITHUB_TOKEN 是自动提供的，用于在 PR 中添加部署状态评论
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Commit and push if changed
         run: |
           git config --global user.name 'github-actions[bot]'
