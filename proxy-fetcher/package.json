@@ -1,0 +1,14 @@
+{
+  "name": "proxy-fetcher",
+  "version": "1.0.0",
+  "description": "一个轻量的 Node.js 脚本，用于获取代理IP并保存到文件",
+  "type": "module",
+  "scripts": {
+    "start": "node fetch-proxies.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["proxy", "fetch", "ip", "nodejs", "automation"],
+  "author": "qiwuqi",
+  "license": "MIT",
+  "dependencies": {}
+}
