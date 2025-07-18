@@ -1,0 +1,12 @@
+{
+  "name": "pp-worker",
+  "version": "1.0.0",
+  "description": "代理IP抓取脚本",
+  "main": "pp-worker.js",
+  "scripts": {
+    "start": "node pp-worker.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.0.0"
+  }
+}
