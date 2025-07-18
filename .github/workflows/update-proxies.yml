@@ -41,13 +41,3 @@ jobs:
           COMMIT_MSG="🤖 chore: Auto-update proxy list on $(date -u +'%Y-%m-%d')"
           # 仅在文件有变动时才提交和推送。在推送前先拉取远程更新以避免冲突。
           git diff --staged --quiet || (git commit -m "$COMMIT_MSG" && git pull --rebase && git push)
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.GH_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: ${{ secrets.CF_PAGES_PROJECT_NAME }} # 需要在仓库 Secrets 中设置
-          directory: '.' # 部署整个仓库的根目录
-          # GITHUB_TOKEN 是自动提供的，用于在 PR 中添加部署状态评论
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
