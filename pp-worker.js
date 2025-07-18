@@ -60,9 +60,9 @@ async function fetchAndSaveProxies() {
   }
 }
 
-// 使用动态 import 加载 node-fetch
+// ✅ 使用动态 import 加载 node-fetch（CommonJS 兼容方式）
 import('node-fetch').then(({ default: fetch }) => {
-  // 替换全局 fetch
+  // 将 fetch 挂载到 global 以便全局使用
   global.fetch = fetch;
   // 执行脚本
   fetchAndSaveProxies();
