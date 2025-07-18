@@ -1,39 +1,40 @@
-name: ⏰ 定时抓取代理 IP 并推送
+name: ⏰ 自动抓取代理列表
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # 每6小时执行一次
-  workflow_dispatch:     # 手动触发支持
+    - cron: '0 */4 * * *'  # 每 4 小时执行一次
+  workflow_dispatch:
 
 jobs:
-  update-proxies:
+  fetch-proxies:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ✅ 检出代码
+      - name: ⬇️ 拉取仓库代码
         uses: actions/checkout@v3
-
-      - name: ⚙️ 设置 Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
 
       - name: 📦 安装依赖
         run: npm install
-        working-directory: ./proxy-fetcher
 
-      - name: 🔄 执行抓取脚本
-        run: node fetch-proxies.mjs
-        working-directory: ./proxy-fetcher
+      - name: 🕵️‍♂️ 抓取代理并生成文件（带重试机制）
+        run: |
+          n=0
+          until [ $n -ge 3 ]; do
+            echo "第 $((n+1)) 次尝试..."
+            node proxy-fetcher/fetch-proxies.mjs && break
+            echo "失败，3 秒后重试..."
+            n=$((n+1))
+            sleep 3
+          done
+        timeout-minutes: 3  # 最长执行时间 3 分钟
 
-      - name: 🆚 提交更改
+      - name: 📤 推送更新
+        if: success()
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "actions@github.com"
-          git add proxy-fetcher/proxy-list.txt
-          git commit -m "🤖 自动更新代理列表 $(date +'%Y-%m-%d %H:%M:%S')" || echo "⚠️ 无需提交"
-
-      - name: 🔐 推送更新
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git
-          git push origin main
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add proxy-list.txt
+          git commit -m "🤖 自动更新代理列表 $(date '+%F %T')" || echo "无变更"
+          git push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
