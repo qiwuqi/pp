@@ -1,0 +1,21 @@
+{
+  "name": "pp",
+  "version": "1.0.0",
+  "description": "🎯 一个简单的 Node.js 脚本，用于从 proxy.scdn.io 获取 HTTPS 代理列表，并随机保存 10 个代理到本地文件 `proxy-list.txt`。",
+  "main": "index.js",
+  "dependencies": {
+    "data-uri-to-buffer": "^4.0.1",
+    "fetch-blob": "^3.2.0",
+    "formdata-polyfill": "^4.0.10",
+    "node-domexception": "^1.0.0",
+    "node-fetch": "^3.3.2",
+    "web-streams-polyfill": "^3.3.3"
+  },
+  "scripts": {
+    "start": "node proxy-fetcher/fetch-proxies.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
