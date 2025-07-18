@@ -9,18 +9,12 @@ API 获取: 从 proxy.scdn.io API 接口获取最新的 HTTPS 代理。
 🔧 如何使用
 1. 环境准备
 确保您的环境中已安装 Python 3 和 requests 库。
-
-bash
 # 安装 requests 库
 pip install requests
 2. 本地运行
 您可以直接在本地运行此脚本来立即获取一份代理列表。
-
-bash
 python get_proxies.py
 运行成功后，您将在脚本所在目录下看到一个名为 proxy-list.txt 的文件，内容如下所示：
-
-text
 206.188.204.64:8443
 165.225.113.220:11712
 205.178.137.232:8447
@@ -50,8 +44,6 @@ text
 更改获取数量: 修改 api_url 中的 count=20 参数来调整从 API 请求的代理数量。
 更改筛选数量: 修改 random.sample(proxies, 10) 中的 10 来调整最终保存到文件中的代理数量。
 更改输出文件名: 修改 output_filename 变量来指定不同的输出文件名。
-python
- Show full code block 
 # get_proxies.py
 
 # ...
@@ -67,4 +59,4 @@ def fetch_and_save_proxies():
     else:
         selected_proxies = random.sample(proxies, 10) # 可修改
     # ...
-  by- 春山空
+                                                                             by  春山空
