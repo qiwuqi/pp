@@ -10,5 +10,7 @@
   "keywords": ["proxy", "fetch", "ip", "nodejs", "automation"],
   "author": "qiwuqi",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
 }
