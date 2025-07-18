@@ -1,52 +1,38 @@
-name: fetch-proxies
+import fetch from 'node-fetch';
+import fs from 'fs';
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 */6 * * *' # 每6小时
+async function fetchAndSaveProxies() {
+  console.log('[1/5] 初始化代理获取流程...');
 
-jobs:
-  update-proxies:
-    runs-on: ubuntu-latest
+  try {
+    console.log('[2/5] 正在从 proxy.scdn.io 获取数据...');
+    const response = await fetch('https://proxy.scdn.io/api/get_proxy.php?protocol=https&count=20');
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    if (!response.ok) {
+      throw new Error(`请求失败: HTTP ${response.status}`);
+    }
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+    const json = await response.json();
+    console.log(`    获取到 ${json.data.count} 个代理IP`);
 
-      - name: Install dependencies
-        working-directory: ./proxy-fetcher
-        run: npm install
+    const proxies = json.data.proxies;
+    if (!Array.isArray(proxies) || proxies.length === 0) {
+      throw new Error('未找到有效的代理IP列表');
+    }
 
-      - name: Run fetch script with retries
-        working-directory: ./proxy-fetcher
-        run: |
-          RETRIES=5
-          for i in $(seq 1 $RETRIES); do
-            echo "第 $i 次尝试..."
-            if node fetch-proxies.mjs; then
-              echo "✅ 成功"
-              break
-            else
-              echo "❌ 失败，10 秒后重试..."
-              sleep 10
-            fi
-          done
+    console.log(`[3/5] 找到有效IP: ${proxies.length} 个`);
+    console.log('[4/5] 随机选取10个IP...');
 
-      - name: Setup Git config
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+    const selected = proxies.sort(() => Math.random() - 0.5).slice(0, 10);
 
-      - name: Set remote URL with token
-        run: git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git
+    console.log('[5/5] 写入文件 proxy-list.txt...');
+    fs.writeFileSync('proxy-fetcher/proxy-list.txt', selected.join('\n'));
 
-      - name: Commit and push changes
-        run: |
-          git add proxy-list.txt || echo "无更改文件"
-          git commit -m "🤖 自动更新代理列表 $(date '+%F %T')" || echo "无提交"
-          git push origin main
+    console.log('✅ 成功保存 10 个代理IP到 proxy-fetcher/proxy-list.txt');
+  } catch (error) {
+    console.error('❌ 执行失败:', error.message);
+    process.exit(1);
+  }
+}
+
+fetchAndSaveProxies();
