@@ -1,48 +1,39 @@
-name: Fetch Proxies and Push
+name: 自动获取代理列表
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # 每 6 小时运行一次
+    - cron: "0 */6 * * *"  # 每 6 小时执行一次
   workflow_dispatch:
 
 jobs:
-  fetch:
+  fetch-and-update:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: 🧾 克隆仓库
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
+      - name: 📦 安装依赖
+        run: npm install
+        working-directory: proxy-fetcher
 
-    - name: Install dependencies
-      run: npm install
-      working-directory: proxy-fetcher
+      - name: 🚀 执行脚本
+        run: npm start
+        working-directory: proxy-fetcher
 
-    - name: Run fetch script
-      run: npm start
-      working-directory: proxy-fetcher
+      - name: 🧠 设置 git 用户信息
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Commit and push
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add proxy-fetcher/proxy-list.txt
-        git commit -m "🤖 自动更新代理列表 $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes"
-        git push
-      env:
-        # 使用 PAT 来认证
-        GIT_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
-      working-directory: .
-      shell: bash
+      - name: 📝 提交更新
+        run: |
+          git add proxy-fetcher/proxy-list.txt
+          git commit -m "🤖 自动更新代理列表 $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes"
 
-    - name: Use token to push
-      run: |
-        remote_url="https://${GIT_AUTH_TOKEN}@github.com/${{ github.repository }}.git"
-        git remote set-url origin "$remote_url"
-        git push
-      env:
-        GIT_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: 🔐 推送更新
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+          git push origin main
