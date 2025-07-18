@@ -1,13 +1,13 @@
 {
-  "name": "proxy-fetcher",
+  "name": "pp",
   "version": "1.0.0",
   "type": "module",
-  "description": "Fetches proxy IPs and saves them to a file.",
+  "description": "🎯 一个简单的 Node.js 脚本，用于从 proxy.scdn.io 获取 HTTPS 代理列表，并随机保存 10 个代理到本地文件 proxy-list.txt。",
   "main": "fetch-proxies.mjs",
   "scripts": {
     "start": "node fetch-proxies.mjs"
   },
   "dependencies": {
-    "node-fetch": "^3.4.0"
+    "node-fetch": "^3.0.0"
   }
 }
