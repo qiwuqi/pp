@@ -1,36 +1,52 @@
-import fetch from 'node-fetch';
-import fs from 'fs';
+name: fetch-proxies
 
-const proxyURL = 'https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt';
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *' # 每6小时
 
-async function safeFetch(url, retries = 3, timeout = 8000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
+jobs:
+  update-proxies:
+    runs-on: ubuntu-latest
 
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(id);
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      if (!res.ok) throw new Error(`HTTP 状态码 ${res.status}`);
-      const text = await res.text();
-      return text;
-    } catch (err) {
-      console.warn(`⚠️ 第 ${i + 1} 次尝试失败: ${err.message}`);
-      if (i === retries - 1) throw err;
-      await new Promise((r) => setTimeout(r, 3000)); // 重试等待
-    }
-  }
-}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-(async () => {
-  console.log('[1/3] ⏳ 正在尝试获取代理列表...');
-  try {
-    const proxyText = await safeFetch(proxyURL);
-    fs.writeFileSync('./proxy-list.txt', proxyText.trim());
-    console.log('[3/3] ✅ 已写入 proxy-list.txt');
-  } catch (e) {
-    console.error(`❌ 最终失败：${e.message}`);
-    process.exit(1);
-  }
-})();
+      - name: Install dependencies
+        working-directory: ./proxy-fetcher
+        run: npm install
+
+      - name: Run fetch script with retries
+        working-directory: ./proxy-fetcher
+        run: |
+          RETRIES=5
+          for i in $(seq 1 $RETRIES); do
+            echo "第 $i 次尝试..."
+            if node fetch-proxies.mjs; then
+              echo "✅ 成功"
+              break
+            else
+              echo "❌ 失败，10 秒后重试..."
+              sleep 10
+            fi
+          done
+
+      - name: Setup Git config
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Set remote URL with token
+        run: git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git
+
+      - name: Commit and push changes
+        run: |
+          git add proxy-list.txt || echo "无更改文件"
+          git commit -m "🤖 自动更新代理列表 $(date '+%F %T')" || echo "无提交"
+          git push origin main
