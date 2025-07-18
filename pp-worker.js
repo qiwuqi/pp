@@ -16,7 +16,6 @@ async function fetchAndSaveProxies() {
   try {
     // 1. 网络请求
     console.log('[2/5] 正在从 proxy.scdn.io 获取数据...');
-    
     const response = await fetch('https://proxy.scdn.io/api/get_proxy.php?protocol=https&count=20', {
       method: 'GET',
       headers: {
