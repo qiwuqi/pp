@@ -37,8 +37,8 @@ jobs:
           git add proxy-list.txt
           # 设置包含当前日期的动态提交信息
           COMMIT_MSG="🤖 chore: Auto-update proxy list on $(date -u +'%Y-%m-%d')"
-          # 仅在文件有变动时才提交和推送
-          git diff --staged --quiet || (git commit -m "$COMMIT_MSG" && git push)
+          # 仅在文件有变动时才提交和推送。在推送前先拉取远程更新以避免冲突。
+          git diff --staged --quiet || (git commit -m "$COMMIT_MSG" && git pull --rebase && git push)
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
