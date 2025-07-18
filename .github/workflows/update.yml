@@ -1,41 +1,49 @@
-name: ⏰ 自动抓取代理列表
+name: ⏰ 定时获取代理列表
 
 on:
   schedule:
-    - cron: '0 */4 * * *'  # 每 4 小时执行一次
-  workflow_dispatch:
+    - cron: "0 * * * *"  # 每小时运行一次
+  workflow_dispatch:     # 允许手动触发
 
 jobs:
   fetch-proxies:
     runs-on: ubuntu-latest
 
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
     steps:
-      - name: ⬇️ 拉取仓库代码
-        uses: actions/checkout@v3
+      - name: ✅ 拉取仓库代码
+        uses: actions/checkout@v4
+
+      - name: ⚙️ 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: 📦 安装依赖
         run: npm install
 
-      - name: 🕵️‍♂️ 抓取代理并生成文件（带重试机制）
+      - name: 🧲 执行代理抓取脚本（带重试机制）
         run: |
-          n=0
-          until [ $n -ge 3 ]; do
-            echo "第 $((n+1)) 次尝试..."
-            node proxy-fetcher/fetch-proxies.mjs && break
-            echo "失败，3 秒后重试..."
-            n=$((n+1))
-            sleep 3
+          RETRIES=5
+          DELAY=10
+          for i in $(seq 1 $RETRIES); do
+            echo "第 $i 次尝试..."
+            if node fetch-proxies.mjs; then
+              echo "✅ 成功获取代理"
+              break
+            else
+              echo "❌ 失败，$DELAY 秒后重试..."
+              sleep $DELAY
+            fi
           done
-        timeout-minutes: 3  # 最长执行时间 3 分钟
 
-- name: 🔐 推送更新
-  run: |
-    git config --global user.name "github-actions[bot]"
-    git config --global user.email "github-actions[bot]@users.noreply.github.com"
-    git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git
-    git add proxy-list.txt
-    git commit -m "🤖 自动更新代理列表 $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-    git push origin main
-  env:
-    GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
+      - name: 🔐 提交并推送更新
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add proxy-list.txt
+          git commit -m "🤖 自动更新代理列表 $(date '+%Y-%m-%d %H:%M:%S')" || echo "⚠️ 无需提交"
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+          git push origin main
