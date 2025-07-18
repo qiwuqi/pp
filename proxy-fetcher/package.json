@@ -1,0 +1,13 @@
+{
+  "name": "proxy-fetcher",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Fetches proxy IPs and saves them to a file.",
+  "main": "fetch-proxies.mjs",
+  "scripts": {
+    "start": "node fetch-proxies.mjs"
+  },
+  "dependencies": {
+    "node-fetch": "^3.4.0"
+  }
+}
