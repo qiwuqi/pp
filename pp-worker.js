@@ -1,6 +1,3 @@
-const fs = require('fs');
-const fetch = require('node-fetch');
-
 // OpenAI 支持的国家列表（49个国家）
 const OPENAI_COUNTRIES = new Set([
   'US', 'CA', 'GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'SE', 'NO',
@@ -19,6 +16,7 @@ async function fetchAndSaveProxies() {
   try {
     // 1. 网络请求
     console.log('[2/5] 正在从 proxy.scdn.io 获取数据...');
+    
     const response = await fetch('https://proxy.scdn.io/api/get_proxy.php?protocol=https&count=20', {
       method: 'GET',
       headers: {
@@ -51,6 +49,7 @@ async function fetchAndSaveProxies() {
 
     // 4. 写入文件
     console.log('[5/5] 写入文件 proxy-list.txt...');
+    const fs = require('fs');
     fs.writeFileSync('proxy-list.txt', selected.join('\n'));
     console.log('='.repeat(50));
     console.log(`✅ 成功保存 ${selected.length} 个代理IP到 proxy-list.txt`);
@@ -62,5 +61,13 @@ async function fetchAndSaveProxies() {
   }
 }
 
-// 执行脚本
-fetchAndSaveProxies();
+// 使用动态 import 加载 node-fetch
+import('node-fetch').then(({ default: fetch }) => {
+  // 替换全局 fetch
+  global.fetch = fetch;
+  // 执行脚本
+  fetchAndSaveProxies();
+}).catch(err => {
+  console.error('❌ 加载 node-fetch 失败:', err.message);
+  process.exit(1);
+});
