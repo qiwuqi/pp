@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Proxy List</title>
+</head>
+<body>
+    <h1>Proxy List</h1>
+    <pre id="proxy-list"></pre>
+
+    <script>
+        // 模拟从 API 获取代理数据
+        fetch('https://proxy.scdn.io/api/get_proxy.php?protocol=https&count=20')
+            .then(response => response.json())
+            .then(data => {
+                const list = data.data.proxies.join('\n');
+                document.getElementById('proxy-list').textContent = list;
+            })
+            .catch(error => console.error('Error fetching proxy data:', error));
+    </script>
+</body>
+</html>
