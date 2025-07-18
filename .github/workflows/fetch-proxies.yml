@@ -1,0 +1,36 @@
+name: Fetch Proxies Daily
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 每天 UTC 0 点运行一次（北京时间早上8点）
+  workflow_dispatch: # 手动触发也可以
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./proxy-fetcher
+
+      - name: Run fetch script
+        run: node fetch-proxies.mjs
+        working-directory: ./proxy-fetcher
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add proxy-list.txt
+          git commit -m "🤖 自动更新代理列表 `date +'%Y-%m-%d %H:%M:%S'`" || echo "No changes"
+          git push
+        working-directory: ./proxy-fetcher
