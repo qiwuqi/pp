@@ -34,3 +34,8 @@ jobs:
           git commit -m "🤖 自动更新代理列表 `date +'%Y-%m-%d %H:%M:%S'`" || echo "No changes"
           git push
         working-directory: ./proxy-fetcher
+      - name: Copy proxy-list.txt to public directory
+        run: |
+          mkdir -p ../../public
+          cp proxy-list.txt ../../public/
+        working-directory: ./proxy-fetcher
